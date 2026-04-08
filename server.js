@@ -1,7 +1,6 @@
 const express = require("express");
 const path = require("path");
 
-// Si quieres usar .env (recomendado)
 try {
     require("dotenv").config();
 } catch (_) { }
@@ -9,7 +8,6 @@ try {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 👉 URL de la API externa
 const LEAD_API_URL = "http://parrandapp.com:4000/api/users/lead";
 
 app.use(express.json({ limit: "1mb" }));
@@ -17,20 +15,26 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/lead", async (req, res) => {
-    const { nombre, edad, correo } = req.body || {};
+    const { nombre, edad, correo, telefono } = req.body || {};  // ✅ añadido telefono
 
     // Validación básica
     const errors = [];
     if (!nombre || String(nombre).trim().length < 2) errors.push("nombre");
 
     const edadNum = Number(edad);
-    if (!Number.isFinite(edadNum) || edadNum < 18 || edadNum > 100)
+    if (!Number.isFinite(edadNum) || edadNum < 16 || edadNum > 100)
         errors.push("edad");
 
     const emailOk =
         typeof correo === "string" &&
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim());
     if (!emailOk) errors.push("correo");
+
+    // ✅ Teléfono opcional — solo valida si viene informado
+    const phoneRaw = telefono ? String(telefono).trim() : null;
+    if (phoneRaw && !/^\+?[\d\s\-().]{6,20}$/.test(phoneRaw)) {
+        errors.push("telefono");
+    }
 
     if (errors.length) {
         return res.status(400).json({
@@ -43,7 +47,8 @@ app.post("/api/lead", async (req, res) => {
     const payload = {
         nombre: String(nombre).trim(),
         edad: edadNum,
-        correo: correo.trim().toLowerCase()
+        correo: correo.trim().toLowerCase(),
+        telefono: phoneRaw || null,  // ✅ añadido al payload
     };
 
     try {
@@ -51,7 +56,6 @@ app.post("/api/lead", async (req, res) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // Si necesitas auth:
                 // "Authorization": `Bearer ${process.env.API_TOKEN}`
             },
             body: JSON.stringify(payload),
@@ -85,11 +89,10 @@ app.post("/api/lead", async (req, res) => {
     }
 });
 
-// Ruta principal
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Rumbly landing corriendo en puerto ${PORT}`);
+    console.log(`🚀 JOIN landing corriendo en puerto ${PORT}`);
 });
