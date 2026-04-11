@@ -45,7 +45,7 @@ app.post("/api/lead", async (req, res) => {
             fields: errors,
         });
     }
-
+ 
     const payload = {
         nombre: String(nombre).trim(),
         edad: edadNum,
