@@ -15,11 +15,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/lead", async (req, res) => {
-    const { nombre, edad, correo, telefono } = req.body || {};  // ✅ añadido telefono
+    const { nombre, edad, correo, provincia, telefono } = req.body || {};  // ✅ añadido telefono
 
     // Validación básica
     const errors = [];
     if (!nombre || String(nombre).trim().length < 2) errors.push("nombre");
+
+    if (!provincia || String(provincia).trim().length < 2) errors.push("provincia");
 
     const edadNum = Number(edad);
     if (!Number.isFinite(edadNum) || edadNum < 16 || edadNum > 100)
@@ -48,6 +50,7 @@ app.post("/api/lead", async (req, res) => {
         nombre: String(nombre).trim(),
         edad: edadNum,
         correo: correo.trim().toLowerCase(),
+        provincia: String(provincia).trim(),
         telefono: phoneRaw || null,  // ✅ añadido al payload
     };
 
