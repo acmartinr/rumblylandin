@@ -62,12 +62,20 @@ app.post("/api/lead", async (req, res) => {
         });
 
         if (!apiResponse.ok) {
-            const text = await apiResponse.text();
-            console.error("❌ Error API externa:", text);
+            const errorData = await apiResponse.json().catch(() => ({}));
+
+            if (apiResponse.status === 409) {
+                return res.status(409).json({
+                    ok: false,
+                    message: "Ya estás registrado en JOIN. Pronto te avisaremos para que puedas comenzar a usar nuestros servicios.",
+                });
+            }
+
+            console.error("❌ Error API externa:", errorData);
 
             return res.status(502).json({
                 ok: false,
-                message: "Error enviando el lead",
+                message: "Error interno",
             });
         }
 
