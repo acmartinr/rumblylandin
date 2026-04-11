@@ -15,6 +15,35 @@
       rel="stylesheet"
     />
     <style>
+      select {
+        width: 100%;
+        padding: 0.9rem 1.1rem;
+        font-size: 1rem;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        border: 2px solid var(--beige-dark);
+        border-radius: 14px;
+        background: var(--white);
+        color: var(--dark);
+        transition: all 0.25s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236a6a50' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.9rem center;
+        background-repeat: no-repeat;
+        background-size: 1.2em;
+        padding-right: 2.8rem;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: var(--gold);
+        background: #fffef9;
+        box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.12);
+      }
+
+      select::placeholder {
+        color: #b0a88a;
+      }
+
       * {
         margin: 0;
         padding: 0;
