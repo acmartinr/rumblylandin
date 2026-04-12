@@ -10,12 +10,51 @@ const PORT = process.env.PORT || 3000;
 
 const LEAD_API_URL = "http://parrandapp.com:4000/api/users/lead";
 
+// ✅ Proxy para /api/users → API externa (igual que /api/lead)
+app.get("/api/users", async (req, res) => {
+    try {
+        const urlParams = new URLSearchParams(req.query).toString();
+        const apiUrl = `http://parrandapp.com:4000/api/users?${urlParams}`;
+
+        console.log(`🔍 Proxy GET /api/users → ${apiUrl}`);
+
+        const apiResponse = await fetch(apiUrl, {
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": `Bearer ${process.env.API_TOKEN}` // descomenta si necesitas
+            },
+        });
+
+        if (!apiResponse.ok) {
+            console.error("❌ Error API externa users:", apiResponse.status);
+            return res.status(apiResponse.status).json({
+                ok: false,
+                message: "Error consultando usuarios",
+            });
+        }
+
+        const data = await apiResponse.json();
+        return res.json(data);
+    } catch (err) {
+        console.error("❌ Error proxy /api/users:", err);
+        return res.status(500).json({
+            ok: false,
+            message: "No se pudo conectar con el servicio",
+        });
+    }
+});
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// ✅ Ruta para la página de registrados
+app.get("/registrados.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "registrados87772662.html"));
+});
+
 app.post("/api/lead", async (req, res) => {
-    const { nombre, edad, correo, provincia, telefono } = req.body || {};  // ✅ añadido telefono
+    const { nombre, edad, correo, provincia, telefono } = req.body || {};
 
     // Validación básica
     const errors = [];
@@ -45,7 +84,7 @@ app.post("/api/lead", async (req, res) => {
             fields: errors,
         });
     }
- 
+
     const payload = {
         nombre: String(nombre).trim(),
         edad: edadNum,
@@ -75,7 +114,6 @@ app.post("/api/lead", async (req, res) => {
             }
 
             console.error("❌ Error API externa:", errorData);
-
             return res.status(502).json({
                 ok: false,
                 message: "Error interno",
@@ -92,7 +130,6 @@ app.post("/api/lead", async (req, res) => {
 
     } catch (err) {
         console.error("❌ Error conectando con la API:", err);
-
         return res.status(500).json({
             ok: false,
             message: "No se pudo conectar con el servicio de leads",
@@ -106,4 +143,5 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`🚀 JOIN landing corriendo en puerto ${PORT}`);
+    console.log(`📋 Accede a usuarios: http://localhost:${PORT}/registrados.html`);
 });
